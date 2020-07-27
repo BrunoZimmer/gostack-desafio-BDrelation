@@ -21,14 +21,19 @@ class Order {
   @JoinColumn({ name: 'customer_id' })
   customer: Customer;
 
-  @OneToMany(() => OrdersProducts, ordersProducts => ordersProducts.order, {
+  // eager serve pra carregar a orders_products automaticamente quando a order for chamada
+  // é usado aqui pra conseguir ver as informações dos produtos
+
+  // cascade permite que as alterações feitas em order reflitam em orders_products automaticamente
+  // é usado aqui porque vai modificar a quantidade de produtos na order e tem q mudar nos produtos
+  @OneToMany(() => OrdersProducts, order_products => order_products.order, {
     cascade: true,
     eager: true,
   })
   @JoinTable({
-    name: 'orders_products',
-    joinColumns: [{ name: 'order_id' }],
-    inverseJoinColumns: [{ name: 'product_id' }],
+    name: 'orders_products', // name of the colum
+    joinColumns: [{ name: 'order_id' }], // first column of the join table
+    inverseJoinColumns: [{ name: 'product_id' }], // second column of the join table(inverse)
   })
   order_products: OrdersProducts[];
 
@@ -40,17 +45,3 @@ class Order {
 }
 
 export default Order;
-
-/* @ManyToOne(() => Customer)
-  @JoinColumn({ name: 'customer' })
-  customer: Customer;
-
-  @OneToMany(() => OrdersProducts, order_products => order_products.id)
-  @JoinColumn({ name: 'order_products' })
-  order_products: OrdersProducts[];
-
-  @CreateDateColumn()
-  created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date; */

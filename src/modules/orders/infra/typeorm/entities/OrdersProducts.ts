@@ -23,49 +23,25 @@ class OrdersProducts {
   @JoinTable({
     name: 'orders', // table name for the junction table of this relation
     joinColumn: {
-      name: 'order_id',
-      referencedColumnName: 'id',
+      name: 'order_id', // name given to the column
+      referencedColumnName: 'id', // Name of the column in the entity to which this column is referenced.
     },
   })
   order: Order;
 
+  // é o "contraponto" da relação one to many no product
+  // sem a propriedade 'name' ele ia criar um ProductId
   @ManyToOne(() => Product, product => product.order_products)
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  @Column({ select: true })
+  @Column()
   product_id: string;
 
-  @Column({ select: false })
+  @Column()
   order_id: string;
 
   @Column('decimal', { precision: 8, scale: 2 })
-  price: number;
-
-  @Column()
-  quantity: number;
-
-  @CreateDateColumn({ select: false })
-  created_at: Date;
-
-  @UpdateDateColumn({ select: false })
-  updated_at: Date;
-
-  /* @ManyToOne(() => Order)
-  @JoinColumn({ name: 'order_id' })
-  order: Order;
-
-  @ManyToOne(() => Product)
-  @JoinColumn({ name: 'product_id' })
-  product: Product;
-
-  @Column()
-  product_id: string;
-
-  @Column()
-  order_id: string;
-
-  @Column()
   price: number;
 
   @Column()
@@ -75,7 +51,7 @@ class OrdersProducts {
   created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: Date; */
+  updated_at: Date;
 }
 
 export default OrdersProducts;

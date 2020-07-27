@@ -12,12 +12,6 @@ interface IProduct {
   quantity: number;
 }
 
-// interface IProduct {
-//   product_id: string;
-//   price: number;
-//   quantity: number;
-// }
-
 interface IRequest {
   customer_id: string;
   products: IProduct[];
@@ -37,7 +31,6 @@ class CreateOrderService {
   ) {}
 
   public async execute({ customer_id, products }: IRequest): Promise<Order> {
-
     const customer = await this.customersRepository.findById(customer_id);
 
     if (!customer) {
@@ -45,16 +38,19 @@ class CreateOrderService {
     }
 
     const productIds = products.map(product => {
-      return { id: product.id };
+      return { id: product.id }; // pegar todos ids de produtos
     });
 
+    // conseguir todas informações de todos os produtos do pedido
     const productsData = await this.productsRepository.findAllById(productIds);
 
-    const productToOrder = productsData.map(product => {
+    const orderProducts = productsData.map(product => {
       const index = products.findIndex(item => item.id === product.id);
 
       if (products[index].quantity > product.quantity) {
-        throw new AppError(`insufficient stock for product "${product.name}"`);
+        throw new AppError(
+          `insufficient stock for ${product.name}, we have only ${product.quantity}`,
+        );
       }
 
       return {
@@ -68,27 +64,10 @@ class CreateOrderService {
 
     const order = await this.ordersRepository.create({
       customer,
-      products: productToOrder,
+      products: orderProducts,
     });
 
     return order;
-
-    /* const customer = await this.customersRepository.findById(customer_id);
-
-    if (!customer) {
-      throw new Error('Customer not exist');
-    }
-
-    if (!products) {
-      throw new Error('Customer not exist');
-    }
-
-    const order = await this.ordersRepository.create({
-      customer,
-      products,
-    });
-
-    return order; */
   }
 }
 

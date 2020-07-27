@@ -44,6 +44,9 @@ class ProductsRepository implements IProductsRepository {
 
   public async findAllById(products: IFindProducts[]): Promise<Product[]> {
     const findProducts = await this.ormRepository.find({
+      // In é usado pra mexer dentro do repositório, funções próprias de typeorm pra mexer
+      // In permite que faça uma comparação com todos itens "IN" um array
+      // SELECT * FROM "Product" WHERE "id" IN ('item[0].id','item[1].id' ...)
       where: { id: In(products.map(item => item.id)) },
     });
 
@@ -51,37 +54,30 @@ class ProductsRepository implements IProductsRepository {
       throw new AppError('One or more products was not found!');
     }
     return findProducts;
-
-    /* const findProducts = await this.ormRepository.findByIds(products);
-
-    return findProducts; */
   }
 
   public async updateQuantity(
     products: IUpdateProductsQuantityDTO[],
   ): Promise<Product[]> {
     const updatedProducts: Product[] = [];
-    products.forEach(async item => {
-      const product = await this.ormRepository.findOne(item.id);
+    products.forEach(async product => {
+      const stockProduct = await this.ormRepository.findOne(product.id);
 
-      if (product && item.quantity > 0) {
-        if (item.quantity > product.quantity) {
+      if (stockProduct && product.quantity > 0) {
+        if (product.quantity > stockProduct.quantity) {
           throw new AppError(
-            `insufficient stock for product "${product.name}"`,
+            `insufficient stock for product ${stockProduct.name}, only ${stockProduct.quantity}`,
           );
         }
-        product.quantity -= item.quantity;
-        await this.ormRepository.save(product);
-        updatedProducts.push(product);
+        console.log('Primeiro', stockProduct.quantity, product.quantity);
+        stockProduct.quantity -= product.quantity;
+        console.log('Segundo', stockProduct.quantity, product.quantity);
+        await this.ormRepository.save(stockProduct);
+        updatedProducts.push(stockProduct);
       }
     });
     return updatedProducts;
   }
-/*
-    const findProducts = await this.ormRepository.findByIds(products);
-
-    return findProducts;
-  } */
 }
 
 export default ProductsRepository;

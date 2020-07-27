@@ -24,7 +24,10 @@ class Product {
   @Column()
   quantity: number;
 
-  @OneToMany(() => OrdersProducts, orderProduct => orderProduct.product)
+  // primeiro elemento é a tabela referencia
+  // segundo elemento é o elemento da tabela a qual ta se referenciando
+  // Uma relação one to many só existe se existir uma many to one
+  @OneToMany(() => OrdersProducts, order_product => order_product.product)
   @JoinColumn()
   order_products: OrdersProducts[];
 
