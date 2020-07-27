@@ -12,6 +12,12 @@ interface IProduct {
   quantity: number;
 }
 
+// interface IProduct {
+//   product_id: string;
+//   price: number;
+//   quantity: number;
+// }
+
 interface IRequest {
   customer_id: string;
   products: IProduct[];
@@ -20,13 +26,69 @@ interface IRequest {
 @injectable()
 class CreateOrderService {
   constructor(
+    @inject('OrdersRepository')
     private ordersRepository: IOrdersRepository,
+
+    @inject('ProductsRepository')
     private productsRepository: IProductsRepository,
+
+    @inject('CustomersRepository')
     private customersRepository: ICustomersRepository,
   ) {}
 
   public async execute({ customer_id, products }: IRequest): Promise<Order> {
-    // TODO
+
+    const customer = await this.customersRepository.findById(customer_id);
+
+    if (!customer) {
+      throw new AppError('Customer not found');
+    }
+
+    const productIds = products.map(product => {
+      return { id: product.id };
+    });
+
+    const productsData = await this.productsRepository.findAllById(productIds);
+
+    const productToOrder = productsData.map(product => {
+      const index = products.findIndex(item => item.id === product.id);
+
+      if (products[index].quantity > product.quantity) {
+        throw new AppError(`insufficient stock for product "${product.name}"`);
+      }
+
+      return {
+        product_id: product.id,
+        price: product.price,
+        quantity: products[index].quantity,
+      };
+    });
+
+    await this.productsRepository.updateQuantity(products);
+
+    const order = await this.ordersRepository.create({
+      customer,
+      products: productToOrder,
+    });
+
+    return order;
+
+    /* const customer = await this.customersRepository.findById(customer_id);
+
+    if (!customer) {
+      throw new Error('Customer not exist');
+    }
+
+    if (!products) {
+      throw new Error('Customer not exist');
+    }
+
+    const order = await this.ordersRepository.create({
+      customer,
+      products,
+    });
+
+    return order; */
   }
 }
 
