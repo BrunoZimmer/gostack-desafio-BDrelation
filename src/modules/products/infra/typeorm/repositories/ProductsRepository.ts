@@ -69,9 +69,7 @@ class ProductsRepository implements IProductsRepository {
             `insufficient stock for product ${stockProduct.name}, only ${stockProduct.quantity}`,
           );
         }
-        console.log('Primeiro', stockProduct.quantity, product.quantity);
         stockProduct.quantity -= product.quantity;
-        console.log('Segundo', stockProduct.quantity, product.quantity);
         await this.ormRepository.save(stockProduct);
         updatedProducts.push(stockProduct);
       }
